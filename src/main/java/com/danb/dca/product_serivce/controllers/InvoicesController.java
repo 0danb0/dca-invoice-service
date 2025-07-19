@@ -46,8 +46,8 @@ public class InvoicesController {
         } catch (Exception e) {
             log.error("-- Error processing the file: {}", e.getMessage());
             throw new InvoiceException(
-                    ErrorMsg.DCA_PRD_SRV_99.getCode(),
-                    ErrorMsg.DCA_PRD_SRV_99.getMessage(),
+                    ErrorMsg.DCA_IVC_SRV_99.getCode(),
+                    ErrorMsg.DCA_IVC_SRV_99.getMessage(),
                     DomainMsg.MICROSERVICE_FUNCTIONAL.getName(),
                     GENERIC_FILE_PROCESSING_ERROR_STRING
             );
@@ -60,10 +60,10 @@ public class InvoicesController {
         if (!applicationProperties.getLicensed().containsValue(applicationLicense)) {
             log.error("- Invalid application license: {}", applicationLicense);
             throw new InvoiceException(
-                    ErrorMsg.DCA_PRD_SRV_02.getCode(),
-                    ErrorMsg.DCA_PRD_SRV_02.getMessage(),
+                    ErrorMsg.DCA_IVC_SRV_02.getCode(),
+                    ErrorMsg.DCA_IVC_SRV_02.getMessage(),
                     DomainMsg.MICROSERVICE_FUNCTIONAL.getName(),
-                    ErrorMsg.DCA_PRD_SRV_02.getDetail()
+                    ErrorMsg.DCA_IVC_SRV_02.getDetail()
             );
         }
     }

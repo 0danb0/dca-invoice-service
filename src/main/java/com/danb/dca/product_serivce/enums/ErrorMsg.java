@@ -5,13 +5,13 @@ import lombok.Getter;
 @Getter
 public enum ErrorMsg {
 
-    DCA_PRD_SRV_01("DCA-PRD-SRV-01", "Invalid fields:", ""),
+    DCA_IVC_SRV_01("DCA-IVC-SRV-01", "Invalid fields:", ""),
 
-    DCA_PRD_SRV_02("DCA-PRD-SRV-02", "Invalid fields: application-license", "Invalid or inactive key, contact support."),
+    DCA_IVC_SRV_02("DCA-IVC-SRV-02", "Invalid fields: application-license", "Invalid or inactive key, contact support."),
 
-    DCA_PRD_SRV_03("DCA-PRD-SRV-03", "S3 Internal error", "There are some trouble with S3 service, please, contact support."),
+    DCA_IVC_SRV_03("DCA-IVC-SRV-03", "S3 Internal error", "There are some trouble with S3 service, please, contact support."),
 
-    DCA_PRD_SRV_99("DCA-PRD-SRV-99", "Generic error", "");
+    DCA_IVC_SRV_99("DCA-IVC-SRV-99", "Generic error", "");
 
     private final String code;
 

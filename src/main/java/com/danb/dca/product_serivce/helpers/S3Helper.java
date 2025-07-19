@@ -16,8 +16,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Slf4j
 @Service
@@ -82,7 +80,7 @@ public class S3Helper {
             log.error("-- Errore generale: {}", e.getMessage());
 
             throw new S3CustomException(
-                    ErrorMsg.DCA_PRD_SRV_99.getCode(),
+                    ErrorMsg.DCA_IVC_SRV_99.getCode(),
                     ConstantEnum.S3_GENERIC_ERROR_MESSAGE.getValue(),
                     DomainMsg.S3_SERVICE_TECHNICAL.getName(),
                     e.getMessage());
