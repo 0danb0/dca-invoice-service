@@ -31,6 +31,9 @@ public class PDFHelper {
     private static final String PATTERN_ADDRESS_REPLACE = ",\\s*$";
     private static final String PATTERN_PRODUCT = "(\\d+) pz.*€ ([\\d,\\.]+).*€ ([\\d,\\.]+)";
     private static final String PATTERN_PRODUCT_CODE = "^\\d{3} .*";
+    private static final String PATTERN_PRODUCT_GENERIC = "(.+?)\\s+(\\d+)\\s+€\\s*([\\d,\\.]+)\\s+€\\s*([\\d,\\.]+)";
+    private static final String PATTERN_PRODUCT_WITH_DISCOUNT = "^(.*)\\s(\\d+) pz\\s(\\d+)%\\s€\\s*([\\d,.]+)";
+    private static final String PATTERN_PRODUCT_SIMPLE = "^(.*)\\s(\\d+) pz\\s€\\s*([\\d,.]+)";
     private static final String PATTERN_DUE_DATE_AND_AMOUNT = "\\d{2}/\\d{2}/\\d{4}:\\s*€?\\s*[\\d.,]+";
     private static final String PATTERN_IBAN = "([A-Z]{2}\\d{2}[A-Z0-9]{1,30})";
     private static final String PREFIX_FILE_NAME = "uploaded-";
@@ -119,17 +122,74 @@ public class PDFHelper {
                 // ==============================
                 // PRODOTTI
                 // ==============================
+                // Caso 1: riga con codice + descrizione, seguita da quantità + prezzi
                 if (line.matches(PATTERN_PRODUCT_CODE) && i + 1 < lines.length) {
                     String code = line.split(" ")[0];
                     String desc = line.substring(code.length()).trim();
                     String nextLine = lines[i + 1].trim();
+
                     Matcher m = Pattern.compile(PATTERN_PRODUCT).matcher(nextLine);
                     if (m.find()) {
                         int qty = Integer.parseInt(m.group(1));
                         double unitPrice = parseDouble(m.group(2));
                         double total = parseDouble(m.group(3));
                         itemsDtoList.add(new ProductDto(code, desc, qty, unitPrice, 0, total));
+                        i++; // salta riga già processata
+                        continue;
                     }
+                }
+
+                // Caso 2: riga con quantità + prezzo + sconto, ma codice sta sulla riga precedente
+                Matcher mDiscount = Pattern.compile(PATTERN_PRODUCT_WITH_DISCOUNT).matcher(line);
+                if (mDiscount.find()) {
+                    String desc = mDiscount.group(1).trim();
+                    int qty = Integer.parseInt(mDiscount.group(2));
+                    double discount = Double.parseDouble(mDiscount.group(3));
+                    double total = parseDouble(mDiscount.group(4));
+                    double unitPrice = total / qty;
+
+                    String code = null;
+
+                    // Cerca codice nella riga precedente
+                    if (i > 0) {
+                        String prevLine = lines[i - 1].trim();
+                        if (prevLine.matches(PATTERN_PRODUCT_CODE)) {
+                            code = prevLine.split(" ")[0];
+                        }
+                    }
+
+                    itemsDtoList.add(new ProductDto(code, desc, qty, unitPrice, discount, total));
+                    continue;
+                }
+
+                // Caso 3: riga con quantità + prezzo, senza sconto, codice nella riga precedente
+                Matcher mSimple = Pattern.compile(PATTERN_PRODUCT_SIMPLE).matcher(line);
+                if (mSimple.find()) {
+                    String desc = mSimple.group(1).trim();
+                    int qty = Integer.parseInt(mSimple.group(2));
+                    double total = parseDouble(mSimple.group(3));
+                    double unitPrice = total / qty;
+
+                    String code = null;
+
+                    if (i > 0) {
+                        String prevLine = lines[i - 1].trim();
+                        if (prevLine.matches(PATTERN_PRODUCT_CODE)) {
+                            code = prevLine.split(" ")[0];
+                        }
+                    }
+
+                    itemsDtoList.add(new ProductDto(code, desc, qty, unitPrice, 0, total));
+                }
+
+                // Caso 4: linea autonoma tipo "Bollo in fattura 1 € 2,00 € 2,00"
+                Matcher mGeneric = Pattern.compile(PATTERN_PRODUCT_GENERIC).matcher(line);
+                if (mGeneric.find()) {
+                    String desc = mGeneric.group(1).trim();
+                    int qty = Integer.parseInt(mGeneric.group(2));
+                    double unitPrice = parseDouble(mGeneric.group(3));
+                    double total = parseDouble(mGeneric.group(4));
+                    itemsDtoList.add(new ProductDto(null, desc, qty, unitPrice, 0, total));
                 }
 
                 // ==============================
